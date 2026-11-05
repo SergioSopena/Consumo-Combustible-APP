@@ -1,0 +1,17 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#232a33"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><title>Consumo</title>
+<style>
+:root{--bg:#232a33;--c:#2d3540;--t:#e9edf2;--m:#93a0b0;--a:#e8a33d;--l:#3d4856}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font:16px/1.4 system-ui,sans-serif;padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+main{max-width:680px;margin:0 auto;padding:16px 16px 24px}h1{font-size:1.4rem;margin:.6rem 0}h2{font-size:1rem;margin:1.4rem 0 .5rem;color:var(--a)}h2 small,.mu,small{color:var(--m);font-weight:400}
+label{display:block;margin:.6rem 0;color:var(--m);font-size:.85rem;flex:1}input,select,button{font:inherit;color:var(--t);background:var(--c);border:1px solid var(--l);border-radius:10px;padding:12px;width:100%;margin-top:4px}
+button{width:auto;cursor:pointer;margin:4px 4px 4px 0}button.pri{width:100%;background:var(--a);color:#1a1d22;border:0;font-weight:700;margin-top:14px;padding:15px}
+.row{display:flex;gap:8px}.row>*{flex:1}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.k{background:var(--c);border-radius:12px;padding:12px}.k b{display:block;font-size:1.15rem}.k span{color:var(--m);font-size:.8rem}.k small{display:block}
+.big{font-size:2.6rem;font-weight:700;color:var(--a);margin:.2rem 0}.ck{display:flex;gap:10px;align-items:center;color:var(--t)}.ck input{width:auto}
+.h{background:var(--c);border-radius:12px;padding:10px 12px;margin:6px 0;font-size:.9rem}.h span{display:block}.st{color:var(--a)}.warn{color:#e0a96d;font-size:.85rem}
+.seg{display:flex}.seg button{flex:1;margin:0;border-radius:0}.seg button.on,#n button.on{background:var(--a);color:#1a1d22}table{width:100%;border-collapse:collapse}td{padding:8px 4px;border-bottom:1px solid var(--l)}
+.ch{width:100%;background:var(--c);border-radius:12px}.ax,.gt{fill:var(--m);font-size:9px}.lg{font-size:.85rem}details{background:var(--c);border-radius:12px;padding:10px;margin-top:10px}
+.gw{max-width:230px;margin:6px auto;text-align:center}.g{width:100%;touch-action:none;display:block}.arc{fill:none;stroke:var(--l);stroke-width:14;stroke-linecap:round}.tk{stroke:var(--m);stroke-width:2}.nd{stroke:var(--a);stroke-width:5;stroke-linecap:round}.hub{fill:var(--a)}.gv{font-size:1.5rem;font-weight:700}
+#n{position:fixed;bottom:0;left:0;right:0;display:flex;background:#1b2027;padding:6px 6px calc(6px + env(safe-area-inset-bottom));gap:4px}#n button{flex:1;margin:0;border:0;background:none;font-size:.8rem;padding:12px 2px}
+#ts{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#000c;padding:8px 16px;border-radius:20px;opacity:0;transition:.3s}
+</style></head><body><main id="m"></main><nav id="n"><button data-t="home">Vehículo</button><button data-t="fill">Repostar</button><button data-t="stats">Estadísticas</button><button data-t="man">Gestión</button></nav><div id="ts"></div>
+<script src="calc.js"></script><script src="app.js"></script></body></html>
