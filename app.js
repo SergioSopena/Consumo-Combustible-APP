@@ -11,7 +11,7 @@ let S={version:1,vehicles:[],fills:[],active:null},tab='home',sub='v',per='all',
 // ---- Persistencia (un único registro: escritura atómica) ----
 const dbp=new Promise((ok,ko)=>{const r=indexedDB.open('consumo',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>ok(r.result);r.onerror=ko});
 const load=()=>dbp.then(d=>new Promise(ok=>{const q=d.transaction('kv').objectStore('kv').get('s');q.onsuccess=()=>ok(q.result)}));
-const save=()=>dbp.then(d=>new Promise((ok,ko)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put(JSON.parse(JSON.stringify(S)),'s');t.oncomplete=ok;t.onerror=()=>ko(t.error)}));
+const save=keep=>{if(!keep)S.mod=Date.now();return dbp.then(d=>new Promise((ok,ko)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put(JSON.parse(JSON.stringify(S)),'s');t.oncomplete=ok;t.onerror=()=>ko(t.error)})).then(()=>{if(!keep&&typeof Sync!='undefined')Sync.changed()})};
 const cur=()=>S.vehicles.find(v=>v.id==S.active&&!v.archived)||S.vehicles.find(v=>!v.archived);
 const An=v=>Calc.analyze(v,S.fills);
 // ---- Indicador de aguja: 0 % = −45°, 100 % = +45°, 0° = horizontal derecha, antihorario positivo ----
@@ -64,14 +64,14 @@ function vGlobal(rg){const f=S.fills.filter(x=>x.ts>=rg[0]&&x.ts<=rg[1]),fu=x=>S
  const km=Calc.sum(S.vehicles,v=>Calc.stats(v,An(v),per,cu,'all').km);
  return`<div class=grid>${kpi('Km totales',fk(km))}${kpi('Litros totales',fl(S_(f)))}${kpi('Gasto total',fe(E(f)))}</div><h2>Gasto por vehículo</h2><table>${S.vehicles.map(v=>`<tr><td>${v.name}</td><td>${fe(E(f.filter(x=>x.vid==v.id)))}</td></tr>`).join('')}</table><h2>Gasto por combustible</h2><table>${Object.entries(g).map(([k,a])=>`<tr><td>${k}</td><td>${fe(E(a))}</td></tr>`).join('')}</table>`}
 function vNew(first){return`<h1>${first?'Crea tu primer vehículo':'Nuevo vehículo'}</h1><label>Nombre<input id=nn></label><label>Tipo${sel('nt',[['4x4','Todoterreno'],['car','Turismo']],'4x4')}</label><label>Combustible${sel('nf',FUELS.map(x=>[x,x]),'Diésel')}</label>
- <label>Fecha de incorporación<input id=nd type=date value="${new Date().toISOString().slice(0,10)}"></label><label>Kilometraje inicial<input id=nk inputmode=decimal></label><div id=ng><p class=mu>Nivel inicial del depósito</p>${gauge(50)}</div><button class=pri onclick="addV()">Crear vehículo</button>`}
+ <label>Fecha de incorporación<input id=nd type=date value="${new Date().toISOString().slice(0,10)}"></label><label>Kilometraje inicial<input id=nk inputmode=decimal></label><div id=ng><p class=mu>Nivel inicial del depósito</p>${gauge(50)}</div><button class=pri onclick="addV()">Crear vehículo</button>${first&&typeof Sync!='undefined'?Sync.ui():''}`}
 function vManage(){const v=cur(),A=v&&An(v);if(adding||!S.vehicles.length)return vNew(!S.vehicles.length);
  const hist=v?[...A.rows].reverse().map(r=>{const x=r.f;return`<div class=h><b>${fd(x.ts)}</b> · ${fk(x.km)} (+${nf(r.dk,0)})<br>${fl(x.l)} · ${fp(x.ppl)} · ${fe(x.total)}${v.type=='4x4'?' · '+MODES[x.mode]+' · '+nf(x.lvl,0)+' %':(x.partial?' · parcial '+nf(x.lvl,0)+' %':' · lleno')}<br><small class=st>${r.state=='valido'?(r.out?'atípico (excluido)':'válido'):r.state}${r.est?' · estimado '+fc(r.est):''}</small>
  <span><button onclick="edit='${x.id}';go('fill')">Editar</button><button onclick="delF('${x.id}')">Borrar</button></span></div>`}).join(''):'';
- return`<button onclick="adding=true;draw()">＋ Añadir vehículo</button><h2>Vehículos</h2>${S.vehicles.map(x=>`<div class=h><b>${x.name}</b> · ${x.type=='car'?'Turismo':'Todoterreno'} · ${x.fuel}<br><small>Desde ${x.date} · ${fk(x.km0)}${x.type=='4x4'?' · nivel inicial '+nf(x.lvl0,0)+' %':''}${x.archived?' · archivado':''}</small>
+ return`<button onclick="adding=true;draw()">＋ Añadir vehículo</button>${typeof Sync!='undefined'?Sync.ui():''}<h2>Vehículos</h2>${S.vehicles.map(x=>`<div class=h><b>${x.name}</b> · ${x.type=='car'?'Turismo':'Todoterreno'} · ${x.fuel}<br><small>Desde ${x.date} · ${fk(x.km0)}${x.type=='4x4'?' · nivel inicial '+nf(x.lvl0,0)+' %':''}${x.archived?' · archivado':''}</small>
  <span><button onclick="renV('${x.id}')">Editar</button><button onclick="arch('${x.id}')">${x.archived?'Reactivar':'Archivar'}</button><button onclick="delV('${x.id}')">Eliminar</button></span></div>`).join('')}
  <h2>Historial${v?' · '+v.name:''}</h2>${hist||'<p class=mu>Sin repostajes.</p>'}<h2>Copia de seguridad</h2><div class=row><button onclick="exp()">Exportar copia de seguridad</button><button onclick="$('#imp').click()">Importar copia de seguridad</button></div><input id=imp type=file accept=".json,application/json" hidden onchange="imp(this.files[0])">
- <p class=warn>Los datos viven solo en este navegador. Si borras los datos del navegador se pierden: exporta copias con regularidad.</p>`}
+ <p class=warn>Los datos se guardan en este dispositivo y, si inicias sesión, también en la nube. Exporta una copia de vez en cuando y guárdala fuera de GitHub.</p>`}
 // ---- Acciones ----
 const toast=t=>{const e=$('#ts');e.textContent=t;e.style.opacity=1;setTimeout(()=>e.style.opacity=0,2200)};
 const V={home:vHome,fill:vFill,stats:vStats,man:vManage};
@@ -112,4 +112,4 @@ async function imp(file){if(!file)return;const old=S;try{const j=JSON.parse(awai
  if(!confirm(`La copia contiene ${d.vehicles.length} vehículos y ${d.fills.length} repostajes.\nSe BORRARÁN todos los datos actuales y se sustituirán por estos.\n¿Continuar?`))return;
  S=d;await save();tab='home';draw();toast('Copia importada')}catch(e){S=old;alert(typeof e=='string'?e:'No se pudo importar: '+e.message)}$('#imp')&&($('#imp').value='')}
 (async()=>{const d=await load();if(d)S=d;const l=[...S.fills].sort((a,b)=>b.ts-a.ts).find(x=>S.vehicles.some(v=>v.id==x.vid&&!v.archived));if(l)S.active=l.vid;
- document.querySelectorAll('#n button').forEach(b=>b.onclick=()=>go(b.dataset.t));draw();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js')})();
+ document.querySelectorAll('#n button').forEach(b=>b.onclick=()=>go(b.dataset.t));draw();if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});if(typeof Sync!='undefined')Sync.init({get:()=>S,set:d=>{S=d},persist:()=>save(true),redraw:()=>{if(tab!='fill')draw()}});if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js')})();
