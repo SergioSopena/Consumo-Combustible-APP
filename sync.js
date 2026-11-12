@@ -3,9 +3,11 @@
 // Si no está configurada o la librería no carga, la app funciona igual, solo en este dispositivo.
 const Sync=(()=>{
 // ▼▼▼ RELLENA ESTAS DOS LÍNEAS (Supabase → Project Settings → API Keys) ▼▼▼
-const SUPABASE_URL='https://hzzqybwhbpfumrretgzb.supabase.co/rest/v1/';
+const SUPABASE_URL_RAW='https://hzzqybwhbpfumrretgzb.supabase.co';
 const SUPABASE_KEY='sb_publishable_V18Ve049BdYmn-Pr-tYPTg_lRBR8ve0';   // empieza por sb_publishable_
 // ▲▲▲ Nunca pongas aquí la clave "secret" ni la "service_role". ▲▲▲
+// Solo el dominio del proyecto: si se pega con ruta (/rest/v1/...), se recorta.
+const SUPABASE_URL=(()=>{try{return new URL(SUPABASE_URL_RAW.trim()).origin}catch(e){return SUPABASE_URL_RAW}})();
 const configured=!SUPABASE_URL.includes('TU-PROYECTO')&&!SUPABASE_KEY.startsWith('TU_');
 let sb=null,user=null,api=null,timer=null,running=false,again=false,status='';
 const q=s=>document.querySelector(s);
